@@ -30,7 +30,10 @@ node "$ROOT/tools/demo-genesis.mjs" "$DATA"
 )
 node "$ROOT/ci/prepare-four.mjs" "$DATA"
 start_node() {
-  local i="$1";local rpc=$((28057 + 10*i)),p2p=$((28056 + 10*i)),abci=$((28058 + 10*i))
+  local i="$1"
+  local rpc=$((28057 + 10*i))
+  local p2p=$((28056 + 10*i))
+  local abci=$((28058 + 10*i))
   "$DATA/valu-abci" -listen "tcp://127.0.0.1:$abci" \
     -worker "$ROOT/src/abci-worker.mjs" -state-dir "$DATA/app$i" \
     -genesis "$DATA/demo-genesis.json" >"$DATA/node${i}-abci.log" 2>&1 &
