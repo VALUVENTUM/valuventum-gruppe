@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>VALUVENTUM® – Lokale Test-Wallet</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <div class="shell">
+    <header class="site-header">
+      <div class="brand"><div class="brand-icon">V</div><div><strong>VALUVENTUM®</strong><span>Unabhängiges VALU-Testnetz</span></div></div>
+      <span class="pill" aria-label="Diese Wallet ist ausschließlich eine Testansicht">TESTNETZ · NUR LESEN</span>
+    </header>
+    <main>
+      <section class="hero">
+        <p class="overline">ECHTE DATEN AUS EINEM LOKALEN COMETBFT-KNOTEN</p>
+        <h1>Meine Test-Wallet</h1>
+        <p>Hier werden bestätigte Testbuchungen aus dem selbst betriebenen VALU-Testnetz angezeigt. Keine echten Guthaben. Keine Anmeldung und keine privaten Schlüssel.</p>
+        <div class="toolbar"><span id="connection" class="connection waiting" role="status" aria-live="polite">Verbindung wird geprüft …</span><button id="reload" type="button">Aktualisieren</button></div>
+      </section>
+      <section class="info-grid" aria-label="Testnetzstatus">
+        <article class="info"><span>Blockhöhe</span><strong id="height">–</strong></article>
+        <article class="info"><span>Gemeinschaftstopf</span><strong id="pool">–</strong></article>
+        <article class="info"><span>Netzwerk</span><strong id="chain" class="small">–</strong></article>
+      </section>
+      <section class="panel">
+        <div class="heading"><h2>Bestätigte Testkonten</h2><span>Alle Werte sind künstliche Test-VALU</span></div>
+        <div id="accounts" class="account-grid"><p class="placeholder">Warte auf lokale Kontodaten …</p></div>
+      </section>
+      <section class="panel">
+        <div class="heading"><h2>Buchungsbelege</h2><span>Nur erfolgreich gebuchte Testzahlungen</span></div>
+        <div class="scroll"><table><thead><tr><th>Block</th><th>Bruttobetrag</th><th>Empfänger</th><th>Gemeinschaft</th></tr></thead><tbody id="receipts"><tr><td colspan="4">Noch keine Daten.</td></tr></tbody></table></div>
+      </section>
+      <section class="details"><strong>Prüfhash des Anwendungszustands</strong><code id="hash">–</code><p>Die Anzeige vertraut dem lokal eingerichteten CometBFT-Knoten. Sie ersetzt noch keine unabhängige Verifikation, sichere Wallet-Verwaltung oder Freigabe für echte Zahlungen.</p></section>
+    </main>
+    <footer>VALUVENTUM® · Lokale Entwicklungsansicht · Keine Verbindung zu realen VALU-Konten</footer>
+  </div>
+</body>
+</html>
