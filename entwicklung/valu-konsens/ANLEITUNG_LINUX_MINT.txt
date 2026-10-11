@@ -1,0 +1,49 @@
+VALUVENTUM: Die lokale Test-Wallet auf Linux Mint starten
+Stand: 11. Oktober 2026
+
+1) Nur den VOLLSTAENDIGEN Entwicklungsstand herunterladen:
+   https://github.com/institut-wohntraum-lebensraum/valuventum-gruppe/tree/entwicklung/valu-konsens-20261011
+   Auf GitHub 'Code' -> 'Download ZIP' waehlen und ZIP entpacken.
+   Das fruehere Paket 'Testwallet_Senden_Entwicklungsstand' war nur
+   eine AENDERUNGSKOPIE und kann nicht allein das Testnetz starten.
+
+2) Im entpackten Projektordner nacheinander die Verzeichnisse
+   'entwicklung' und 'valu-konsens' oeffnen.
+
+3) Im Dateimanager Rechtsklick auf freien Platz -> 'Im Terminal oeffnen'.
+   Dann genau diesen einen Befehl eingeben:
+
+   bash START_VALU_TESTWALLET_LINUX_MINT.sh
+
+   Falls Node.js 22, Go 1.23 oder curl fehlen, sagt das Skript klar,
+   welches Programm fehlt. Es installiert NICHTS automatisch.
+   Den angezeigten Fehler fotografieren und im Chat zeigen.
+
+4) Beim ersten Start werden offene Go-Bausteine aus dem Internet
+   abgerufen und lokal kompiliert. Das dauert einige Minuten.
+   Danach wird Firefox (falls vorhanden) automatisch geoeffnet.
+   Andernfalls manuell diese Adresse eingeben:
+
+   http://127.0.0.1:28999/
+
+5) Fuer eine TEST-Zahlung nur die beim Start angezeigte
+   Datei 'sender-demo.pem' aus dem Test-Temp-Ordner auswaehlen.
+   Sie ist ein automatisch erzeugter, NICHT sicherer Testschluessel.
+   Keine alten Wallets, keine produktiven Schluessel verwenden.
+
+   Test: 100 TEST-VALU senden; Empfaenger erhaelt 90, der
+   Gemeinschaftstopf 10. Saldo und Beleg kommen aus CometBFT.
+
+6) Zum Beenden das laufende Terminal mit Strg+C stoppen.
+   Die Knoten und die Test-Wallet halten an. Beim naechsten
+   Skriptstart wird ein frisches Testnetz erzeugt.
+
+   Das Testnetz laeuft auf EINEM Rechner mit vier Prozessen.
+   Es ist weder ein produktives Guthaben noch ein Beweis fuer
+   vier unabhaengige Betreiber. GitHub ist keine Laufzeitpflicht.
+   Die alte VALUVENTUM-Website und das bisherige Konto
+   bleiben unveraendert.
+
+Nur zum schnellen Vorabcheck ohne Start:
+
+   bash START_VALU_TESTWALLET_LINUX_MINT.sh --check

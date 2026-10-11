@@ -1,0 +1,22 @@
+name: VALU Entwicklung - deterministischer Zahlungskern
+on:
+  push:
+    paths:
+      - 'entwicklung/valu-konsens/**'
+      - '.github/workflows/valu-kern-tests.yml'
+  pull_request:
+    paths:
+      - 'entwicklung/valu-konsens/**'
+      - '.github/workflows/valu-kern-tests.yml'
+permissions:
+  contents: read
+jobs:
+  node-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Prüfe Test-Kern und deterministische Blockanwendung
+        run: node --test entwicklung/valu-konsens/tests/*.test.mjs

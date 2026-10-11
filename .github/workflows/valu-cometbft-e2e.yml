@@ -1,0 +1,36 @@
+name: VALU – echter CometBFT-ABCI-Einzelknoten
+on:
+  push:
+    paths:
+      - 'entwicklung/valu-konsens/**'
+      - '.github/workflows/valu-cometbft-e2e.yml'
+  pull_request:
+    paths:
+      - 'entwicklung/valu-konsens/**'
+      - '.github/workflows/valu-cometbft-e2e.yml'
+permissions:
+  contents: read
+jobs:
+  node-abci-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: JS-Zahlungskern, deterministische Blöcke und IPC
+        run: node --test entwicklung/valu-konsens/tests/*.test.mjs
+  cometbft-single-validator:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23.5'
+      - name: Build official CometBFT v0.38.26 and VALU ABCI bridge; test restart and replay
+        run: bash entwicklung/valu-konsens/ci/run-single-node.sh

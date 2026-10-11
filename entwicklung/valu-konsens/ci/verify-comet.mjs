@@ -1,0 +1,27 @@
+/** Verify committed ABCI query from the actual CometBFT RPC. */
+import {readFile} from 'node:fs/promises';
+import {join} from 'node:path';
+import assert from 'node:assert/strict';
+import {CHAIN_ID, addressFromPublicDER,toUnits} from '../src/core.mjs';
+const dir=process.argv[2],url=process.argv[3]??'http://127.0.0.1:26657';
+if(!dir)throw Error('usage: node ci/verify-comet.mjs <test-data-dir> [rpc-url]');
+const initial=JSON.parse(await readFile(join(dir,'demo-genesis.json'),'utf8'));
+const statusRes=await fetch(url+'/status',{signal:AbortSignal.timeout(15000)});
+const status=await statusRes.json();
+assert.equal(status.result.node_info.network,CHAIN_ID,'wrong CometBFT chain');
+const rpc={jsonrpc:'2.0',id:2,method:'abci_query',params:{path:'/demo-state'}};
+const resp=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(rpc),signal:AbortSignal.timeout(15000)});
+const payload=await resp.json();
+if(payload.error)throw Error(JSON.stringify(payload.error));
+assert.equal(payload.result?.response?.code,0,'ABCI query must succeed');
+const raw=Buffer.from(payload.result.response.value,'base64').toString('utf8');
+const state=JSON.parse(raw);
+const sender=addressFromPublicDER(initial.wallets[0].publicDER);
+const receiver=addressFromPublicDER(initial.wallets[1].publicDER);
+assert.ok(state.height>=1,'no committed block');
+assert.equal(state.demo,true);
+assert.equal(state.balances[sender],toUnits('1900'));
+assert.equal(state.balances[receiver],toUnits('90'));
+assert.equal(state.poolUnits,toUnits('60'));
+assert.match(state.appHash,/^[0-9a-f]{64}$/);
+console.log('COMETBFT_STATE_VERIFIED',JSON.stringify({height:state.height,appHash:state.appHash,pool:state.poolUnits,sender:state.balances[sender],receiver:state.balances[receiver]}));

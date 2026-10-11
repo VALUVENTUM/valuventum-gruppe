@@ -1,0 +1,5 @@
+# Demonstration only: never publish keys, states, or validator identities
+/data/
+/abci-go/data/
+/abci-go/valu-abci
+/.cometbft*/

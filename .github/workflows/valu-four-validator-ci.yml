@@ -1,0 +1,32 @@
+name: VALU - vier CometBFT Validatoren auf einem Host
+on:
+  push:
+    paths:
+      - 'entwicklung/valu-konsens/**'
+      - '.github/workflows/valu-four-validator-ci.yml'
+  pull_request:
+    paths:
+      - 'entwicklung/valu-konsens/**'
+      - '.github/workflows/valu-four-validator-ci.yml'
+permissions:
+  contents: read
+jobs:
+  four-validators:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23.5'
+      - name: VALU state machine and Go network safety tests
+        run: |
+          node --test entwicklung/valu-konsens/tests/*.test.mjs
+          cd entwicklung/valu-konsens/abci-go
+          go mod tidy
+          go test ./cmd/valu-abci
+      - name: 4 local validators, same ledger, quorum, reconnect, replay protection
+        run: bash entwicklung/valu-konsens/ci/run-four-live.sh
