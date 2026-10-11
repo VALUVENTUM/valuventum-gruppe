@@ -1,34 +1,41 @@
-# VALUVENTUM – echte lokale Test-Wallet (nur Lesen)
+# VALUVENTUM: lokale Test-Wallet mit Browser-Signatur
 
-Stand 11. Oktober 2026. **Keine produktive Wallet und kein echtes Geld.** Dieses Zusatzmodul wird ausschließlich im vorhandenen GitHub-Entwicklungszweig gepflegt. Die ursprüngliche `05_Wallet.html`, das originale Offline-Modellkonto und der Hauptzweig `main` bleiben unverändert.
+Stand: 11. Oktober 2026. **Nur kuenstliche Test-VALU, keine produktive Wallet, keine echten Guthaben.** Die Original-Wallet und der GitHub-Hauptzweig bleiben unberuehrt.
 
-## Umfang
+## Technische Funktionen
 
-- Eine lokale HTML-Seite (`http://127.0.0.1:8098/`) zeigt ausschließlich **tatsächlich gespeicherte künstliche Testsalden** der laufenden CometBFT-ABCI-Anwendung.
-- Datenquelle: lokaler CometBFT-JSON-RPC (`http://127.0.0.1:28057` im Vier-Validatoren-Test). API: `GET /api/state`.
-- Angezeigt: Testkette, Blockhöhe, zwei synthetische Konten, Gemeinschaftstopf, Anwendungs-Prüfhash und bis zu 20 bestätigte Belege.
-- Keine ausgedachten Kontostände, keine Schreib- oder Zahlungsbefehle, keine Anmeldung, kein Import von Original-Walletdaten und keine privaten Schlüssel im Webserver.
-- Die Oberfläche ist ohne CDN, Supabase, Ethereum oder Cloud-Laufzeitdienste selbst hostbar. Die Browseroberfläche und der Server binden ausschließlich an `127.0.0.1`; CometBFT muss parallel laufen.
-- Eine nicht erreichbare oder falsche Kette ergibt einen klaren Offline-Status statt gespeicherter oder erfundener Guthaben.
+- Die lokale Weboberflaeche `http://127.0.0.1:8098/` zeigt **bestaetigte** Testkontostaende, Blockhoehe, Gemeinschaftstopf und Buchungsbelege von einem laufenden CometBFT-Knoten an.
+- Der Nutzer waehlt das sendende Testkonto, ein empfangendes Testkonto, den Betrag und eine lokale PEM-Testdatei. Der Browser verwendet WebCrypto Ed25519, signiert die Transaktion lokal, verifiziert die Signatur gegen den oeffentlichen Schluessel und sendet nur das signierte JSON.
+- Der lokale Server bindet nur an `127.0.0.1`. `POST /api/submit` verlangt gleiche Browser-Origin, einen speziellen Demo-Header und die gueltige Ed25519-Signatur. Es gibt keinen Passwort- oder Private-Key-Endpunkt.
+- Der Server reicht den signierten Demoauftrag an `broadcast_tx_commit` des konfigurierten *lokalen* CometBFT-RPC weiter. Ein Auftrag gilt erst als bestaetigt, wenn sowohl der Validator die Zahlung annimmt als auch ein passender gebuchter Beleg im Testzustand gefunden wird. Unklarer Ausgang wird nicht als Erfolg bezeichnet.
+- 100 Test-VALU brutto ergeben 90 Test-VALU Empfaenger und 10 Test-VALU Gemeinschaftstopf, ohne zusaetzliche Sendergebuehr. Das ist Modellbuchfuehrung, keine reale Waehrung.
+- Keine CDN-, Supabase-, Ethereum- oder GitHub-Laufzeitpflicht.
 
-## Test und Start
+## Lokal testen
+
+Mit Node.js 22 und Go 1.23 sowie CometBFT v0.38.26:
 
 ```sh
 node --test entwicklung/valu-konsens/tests/*.test.mjs
+bash entwicklung/valu-konsens/ci/run-four-live.sh
 ```
 
-Wenn der CometBFT-Einzelknoten oder Vier-Validatoren-Test auf dem **gleichen** Rechner läuft, kann die Oberfläche mit folgendem Befehl im GitHub-Repository gestartet werden:
+Der zweite Befehl erzeugt temporaere Testkonten und startet vier CometBFT-Validatoren mit vier getrennten Datenordnern auf **einem** Rechner. Er prueft eine normale Zahlung, eine Browser-kompatibel signierte Zahlung via Test-Wallet, Fortsetzung mit drei Validatoren, Wiederbeitritt und Doppelbuchungsschutz. Alle Dienste binden an 127.0.0.1. Der Test startet und stoppt alle Prozesse selbst.
+
+Zum manuellen Ausprobieren, bei bereits installierten Abhaengigkeiten:
 
 ```sh
-node entwicklung/valu-konsens/wallet-test/server.mjs --rpc http://127.0.0.1:28057 --port 8098
+bash entwicklung/valu-konsens/ci/run-four-live.sh --interactive
 ```
 
-Der Vier-Knoten-Ende-zu-Ende-Test startet sie selbst auf Port 28999 und prüft echte Live-Salden nach erster Buchung, nach Ausfall eines Validators und nach dessen Wiederbeitritt.
+Dann die angezeigte lokale URL oeffnen und *ausschliesslich* die beim Teststart neu erzeugte `sender-demo.pem` im Dateifeld auswaehlen. Die PEM-Datei darf nie ins Internet, auf GitHub oder in eine produktive Wallet uebernommen werden. Mit Strg+C wird die lokale Testumgebung beendet. Die temporaeren Demo-Schluessel werden vom Skript **nicht** als sichere Geheimnisse behandelt; nach dem Test kann das angelegte Temp-Verzeichnis entfernt werden.
 
-## Sicherheit und offene Arbeiten
+## Ehrliche Grenzen
 
-Die Anzeige vertraut dem angesprochenen **lokalen Knoten** und prüft keine unabhängigen Blockbeweise. Auch die Test-Genesis ist künstlich, auf zwei Testkonten begrenzt, und die Schlüssel sind ausdrücklich nur für die temporäre GitHub-Testumgebung erzeugt.
+- **Kein Browser-Passwortschutz, keine sichere Schluesselaufbewahrung, keine Wiederherstellung, keine Hardware-Wallet und keine unabhaengige Sicherheitspruefung.** Der Browser verarbeitet die PEM kurzfristig im Arbeitsspeicher. Fuer reale Werte ist dieser Testmechanismus nicht freigegeben.
+- Die Demo-Genesis hat zwei kuenstliche Konten. Neue selbst erzeugte Adressen sind ohne registrierte Guthaben nicht zahlungsfaehig.
+- Die Browseranzeige vertraut einem lokal konfigurierten CometBFT-Knoten; sie prueft keine kryptographischen Blocknachweise eigenstaendig. Bei Verbindungsabbruch bleibt der Status offen, nicht als bestaetigt.
+- Vier Prozesse auf einem physischen Rechner belegen noch keine Unabhaengigkeit verschiedener Rechner oder Betreiber.
+- Der bisherige VALUVENTUM-Hauptstand, die alte Wallet-Ansicht sowie deren vier Modellbuchungen bleiben unangetastet.
 
-Diese Version besitzt **keine** Benutzeranmeldung, keine Schlüsselsicherung oder -wiederherstellung und keine freigegebene Browser-Signatur. Vor echten Transaktionen folgen Wallet-Identität, sichere lokale Signatur, geräteübergreifende Netzanbindung und unabhängige Sicherheitsprüfung. Die ursprünglichen modellierten Guthaben bilden **keine** Kontodeckung.
-
-GitHub dient nur der Entwicklung und den vorübergehenden automatischen Tests; beim selbst betriebenen Betrieb benötigt die Anwendung keinen GitHub-Dienst.
+Erst nach erfolgreichem GitHub-Mehrknoten-Ende-zu-Ende-Lauf, Security-Review, Schluesselverwaltung und realen Mehrgeraete-Tests kann eine weitergehende Freigabe diskutiert werden.

@@ -1,0 +1,17 @@
+VALUVENTUM TEST-WALLET MIT SIGNIERTEN TESTZAHLUNGEN
+11.10.2026
+
+Vorheriger Projektstand: vier CometBFT-Validatoren lokal auf einem Host, belegter Testlauf 38159171506. Spae­ter hinzugefuegte read-only Wallet verursachte im Skript einen erneuten Bash-Startfehler, weil eine gemeinsame local-Deklaration die Portvariable zu frueh auswertete. Im vorliegenden Entwicklungsbaustein ist die Deklaration getrennt.
+
+Erweiterungen in diesem Paket:
+- Ed25519-WebCrypto-Signierung einer Testzahlung im Browser; der private PEM-Schluessel wird nicht an den lokalen Server gesendet.
+- Validierter lokaler POST-Endpunkt, gleich-origin, ohne Cloud-API.
+- Transaktionsbestaetigung nur nach CometBFT-Antwort und passendem Buchungsbeleg.
+- Auf der Website: Absender, Empfaenger, Betrag, lokaler PEM-Import, Bestaetigungsanzeige.
+- Der Mehrvalidatorentest sendet den zweiten Auftrag ueber den Wallet-Endpunkt.
+- Interaktiver Start fuer lokale Tests.
+
+KONTROLLPUNKTE:
+- Lokale Node- und Server-Tests im Repo.
+- Der GitHub-E2E-Prueflauf fuer DIESEN Stand steht aus, bis die geaenderten Dateien dorthin uebertragen und der Lauf erfolgreich abgeschlossen ist.
+- Keine Produktivversion oder echten Vermoegenswerte, kein Mehrcomputer-Nachweis.

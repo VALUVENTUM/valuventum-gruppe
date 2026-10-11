@@ -5,6 +5,7 @@ import {join} from 'node:path';
 import {setTimeout as delay} from 'node:timers/promises';
 import {createPrivateKey,createPublicKey} from 'node:crypto';
 import {CHAIN_ID,publicDER,addressFromPublicDER,signedTransaction,toUnits} from '../src/core.mjs';
+import {signDemoPayment} from '../wallet-test/sign.mjs';
 const dir=process.argv[2], mode=process.argv[3];
 if(!dir || !['ready','pay1','continue3','catchup'].includes(mode))throw Error('Usage: check-four.mjs <data> ready|pay1|continue3|catchup');
 const nodes=Array.from({length:4},(_,i)=>({i,url:`http://127.0.0.1:${28057+10*i}`}));
@@ -52,6 +53,20 @@ async function send(nonce,amount,n=nodes[0],expectDuplicate=false){
  assert.equal(check,0,r.check_tx?.log);assert.equal(Number(r.tx_result?.code??r.deliver_tx?.code??-1),0);
  return Number(r.height);
 }
+async function sendViaBrowserWallet(amount,expectedNonce){
+ const url='http://127.0.0.1:28999';
+ const snapshot=await (await fetch(url+'/api/state',{signal:AbortSignal.timeout(8000)})).json();
+ const account=snapshot.accounts.find(item=>item.address===sender);
+ assert.equal(account?.nonce+1,expectedNonce,'wrong signer nonce from live wallet');
+ const tx=await signDemoPayment({privatePEM:pem,senderPublicDER:account.publicDER,to:receiver,valu:amount,nonce:account.nonce+1});
+ const reply=await fetch(url+'/api/submit',{method:'POST',headers:{'content-type':'application/json','x-valu-demo':'synthetic','origin':url},body:JSON.stringify(tx),signal:AbortSignal.timeout(45000)});
+ const result=await reply.json();
+ assert.equal(reply.status,200,JSON.stringify(result));
+ assert.equal(result.status,'confirmed');
+ assert.equal(result.grossUnits,toUnits(amount));
+ console.log('BROWSER_SIGNED_WALLET_PAYMENT_CONFIRMED',result.height);
+ return result.height;
+}
 if(mode==='ready'){
  await wait('4 validators online',async()=>{
   const h=await heights(nodes);const peers=await Promise.all(nodes.map(async n=>Number((await rpc(n,'net_info')).n_peers)));
@@ -69,7 +84,7 @@ if(mode==='pay1'){
 if(mode==='continue3'){
  const live=nodes.slice(0,3);const before=await heights(live);
  await wait('3/4 continue blocks',async()=>{const now=await heights(live);return now.every((x,i)=>x>=before[i]+2);});
- const h=await send(2,'50',live[1]);
+ const h=await sendViaBrowserWallet('50',2);
  await checkBalances(live,'1850','135','65');
  await agreement(live,h+1);
  writeFileSync(join(dir,'followup-height.txt'),String(h+1));

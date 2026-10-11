@@ -4,10 +4,11 @@ import {readDemoState,localRpcUrl} from '../wallet-test/rpc.mjs';
 import {createWalletServer} from '../wallet-test/server.mjs';
 import {CHAIN_ID,newPair,addressFromPublicDER} from '../src/core.mjs';
 
-const a=addressFromPublicDER(newPair().publicDER);
-const b=addressFromPublicDER(newPair().publicDER);
+const pairA=newPair(),pairB=newPair();
+const a=addressFromPublicDER(pairA.publicDER);
+const b=addressFromPublicDER(pairB.publicDER);
 const receipt={id:'a'.repeat(64),height:3,from:a,to:b,grossUnits:'100000',receiverUnits:'90000',poolUnits:'10000'};
-const sample={demo:true,height:3,poolUnits:'60000',balances:{[a]:'1900000',[b]:'90000'},appHash:'b'.repeat(64),receipts:[receipt]};
+const sample={demo:true,height:3,poolUnits:'60000',balances:{[a]:'1900000',[b]:'90000'},accounts:[{address:a,publicDER:pairA.publicDER,nonce:1},{address:b,publicDER:pairB.publicDER,nonce:0}],appHash:'b'.repeat(64),receipts:[receipt]};
 const okResponse={node_info:{network:CHAIN_ID},sync_info:{latest_block_height:'3'}};
 function fakeFetch(raw=sample,status=okResponse){
  return async(_url,options)=>{
@@ -28,7 +29,7 @@ test('Only local, uncredentialed, HTTP CometBFT RPC addresses accepted',()=>{
 test('Returns real RPC values in read-only schema without private material',async()=>{
  const data=await readDemoState('http://127.0.0.1:28057',{fetcher:fakeFetch()});
  assert.equal(data.height,3);assert.equal(data.chainId,CHAIN_ID);
- assert.deepEqual(data.accounts,[{address:a,balanceUnits:'1900000'},{address:b,balanceUnits:'90000'}]);
+ assert.deepEqual(data.accounts,[{address:a,balanceUnits:'1900000',publicDER:pairA.publicDER,nonce:1},{address:b,balanceUnits:'90000',publicDER:pairB.publicDER,nonce:0}]);
  assert.equal(data.poolUnits,'60000');assert.equal(data.receipts.length,1);
  assert.equal(data.readOnly,true);assert.equal(data.demo,true);
  assert.doesNotMatch(JSON.stringify(data),/privatePEM|seedPhrase|sender-demo.pem/);
@@ -49,7 +50,7 @@ test('Wallet serves local HTML, live JSON and refuses write methods',async(t)=>{
  const home=await fetch(origin+'/');assert.equal(home.status,200);
  assert.match(await home.text(),/Test-Wallet/);
  assert.match(home.headers.get('content-security-policy'),/connect-src 'self'/);
- for(const path of ['/app.js','/style.css']){
+ for(const path of ['/app.js','/sign.mjs','/style.css']){
    const res=await fetch(origin+path);assert.equal(res.status,200,path);assert.ok((await res.text()).length>100);
  }
  const api=await fetch(origin+'/api/state');assert.equal(api.status,200);

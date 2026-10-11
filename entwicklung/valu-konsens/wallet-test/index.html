@@ -6,19 +6,19 @@
   <meta name="robots" content="noindex,nofollow">
   <title>VALUVENTUM® – Lokale Test-Wallet</title>
   <link rel="stylesheet" href="/style.css">
-  <script src="/app.js" defer></script>
+  <script type="module" src="/app.js"></script>
 </head>
 <body>
   <div class="shell">
     <header class="site-header">
       <div class="brand"><div class="brand-icon">V</div><div><strong>VALUVENTUM®</strong><span>Unabhängiges VALU-Testnetz</span></div></div>
-      <span class="pill" aria-label="Diese Wallet ist ausschließlich eine Testansicht">TESTNETZ · NUR LESEN</span>
+      <span class="pill" aria-label="Diese Wallet ist ausschließlich eine Testansicht">TESTNETZ · TESTZAHLUNGEN</span>
     </header>
     <main>
       <section class="hero">
         <p class="overline">ECHTE DATEN AUS EINEM LOKALEN COMETBFT-KNOTEN</p>
         <h1>Meine Test-Wallet</h1>
-        <p>Hier werden bestätigte Testbuchungen aus dem selbst betriebenen VALU-Testnetz angezeigt. Keine echten Guthaben. Keine Anmeldung und keine privaten Schlüssel.</p>
+        <p>Hier werden bestätigte Testbuchungen aus dem selbst betriebenen VALU-Testnetz angezeigt. Keine echten Guthaben. Zum Senden wird ein lokal ausgewaehlter Testschluessel ausschliesslich im Browser verwendet.</p>
         <div class="toolbar"><span id="connection" class="connection waiting" role="status" aria-live="polite">Verbindung wird geprüft …</span><button id="reload" type="button">Aktualisieren</button></div>
       </section>
       <section class="info-grid" aria-label="Testnetzstatus">
@@ -29,6 +29,21 @@
       <section class="panel">
         <div class="heading"><h2>Bestätigte Testkonten</h2><span>Alle Werte sind künstliche Test-VALU</span></div>
         <div id="accounts" class="account-grid"><p class="placeholder">Warte auf lokale Kontodaten …</p></div>
+      </section>
+      <section class="panel" id="send-panel">
+        <div class="heading"><h2>Test-VALU senden</h2><span>Nur synthetische Testkonten</span></div>
+        <p class="hint">Die Testschluessel-Datei wird nur zum Signieren im Browser eingelesen. An den lokalen Server geht ausschliesslich der signierte Auftrag. Niemals einen echten privaten Schluessel hochladen oder importieren.</p>
+        <form id="send-form" autocomplete="off">
+          <div class="form-grid">
+            <label>Absender-Testkonto<select id="from" required></select></label>
+            <label>Empfaenger-Testkonto<select id="to" required></select></label>
+            <label>Bruttobetrag (Test-VALU)<input id="valu" type="text" inputmode="decimal" required pattern="[0-9]+(\.[0-9]{1,3})?" value="10"></label>
+            <label>Verwendungszweck<input id="memo" type="text" maxlength="120" value="TEST"></label>
+            <label class="full">Ed25519-Testschluessel-Datei (.pem, lokal)<input id="test-key" type="file" accept=".pem,.key,text/plain" required></label>
+          </div>
+          <p class="hint">Von 100 Test-VALU werden 90 beim Empfaenger und 10 im Gemeinschaftstopf verbucht. Eine Dateiauswahl speichert keinen privaten Schluessel auf dem Server.</p>
+          <div class="toolbar"><button id="send-button" type="submit">Testzahlung signieren und senden</button><span id="send-status" class="send-status" role="status" aria-live="polite">Noch keine Testzahlung gesendet.</span></div>
+        </form>
       </section>
       <section class="panel">
         <div class="heading"><h2>Buchungsbelege</h2><span>Nur erfolgreich gebuchte Testzahlungen</span></div>

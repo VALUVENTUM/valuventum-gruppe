@@ -31,7 +31,10 @@ node "$ROOT/tools/demo-genesis.mjs" "$DATA"
 )
 node "$ROOT/ci/prepare-four.mjs" "$DATA"
 start_node() {
-  local i="$1";local rpc=$((28057 + 10*i)),p2p=$((28056 + 10*i)),abci=$((28058 + 10*i))
+  local i="$1"
+  local rpc=$((28057 + 10*i))
+  local p2p=$((28056 + 10*i))
+  local abci=$((28058 + 10*i))
   "$DATA/valu-abci" -listen "tcp://127.0.0.1:$abci" \
     -worker "$ROOT/src/abci-worker.mjs" -state-dir "$DATA/app$i" \
     -genesis "$DATA/demo-genesis.json" >"$DATA/node${i}-abci.log" 2>&1 &
@@ -46,6 +49,13 @@ for i in 0 1 2 3;do start_node "$i";done
 node "$ROOT/wallet-test/server.mjs" --rpc http://127.0.0.1:28057 --port 28999 >"$DATA/wallet.log" 2>&1 &
 WALLET_PID=$!
 node "$ROOT/ci/check-four.mjs" "$DATA" ready
+if [[ "${1:-}" == "--interactive" ]]; then
+  echo "VALU_LOCAL_TESTNET_READY http://127.0.0.1:28999/"
+  echo "Only synthetic test accounts. Test PEM file for the first account: $DATA/sender-demo.pem"
+  echo "Private key stays on this computer; select it in the browser (never use real private keys)."
+  echo "Press Ctrl-C to stop the local testnet."
+  while true; do sleep 5; done
+fi
 node "$ROOT/ci/check-four.mjs" "$DATA" pay1
 node "$ROOT/ci/check-wallet.mjs" "$DATA" 1900 90 60 1
 stop_node 3
