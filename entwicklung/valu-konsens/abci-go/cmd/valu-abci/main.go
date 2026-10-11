@@ -13,9 +13,12 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"net"
 	"os"
 	"os/exec"
 	"os/signal"
+	"strconv"
+	"strings"
 	"sync"
 	"syscall"
 	"time"
@@ -257,6 +260,23 @@ func (a *valuApp) VerifyVoteExtension(_ context.Context, req *abci.RequestVerify
 	return &abci.ResponseVerifyVoteExtension{Status: abci.ResponseVerifyVoteExtension_ACCEPT}, nil
 }
 
+// Accept separate ABCI ports for four local validators, but never a public listener.
+func allowedLoopbackListen(address string) bool {
+	if !strings.HasPrefix(address, "tcp://") {
+		return false
+	}
+	host, port, err := net.SplitHostPort(strings.TrimPrefix(address, "tcp://"))
+	if err != nil {
+		return false
+	}
+	portNumber, err := strconv.Atoi(port)
+	if err != nil || portNumber < 1024 || portNumber > 65535 {
+		return false
+	}
+	ip := net.ParseIP(host)
+	return host == "localhost" || (ip != nil && ip.IsLoopback())
+}
+
 func main() {
 	address := flag.String("listen", "tcp://127.0.0.1:26658", "CometBFT ABCI listen address (loopback only)")
 	nodeBin := flag.String("node", "node", "Node.js executable")
@@ -264,8 +284,8 @@ func main() {
 	stateDir := flag.String("state-dir", "./data/valu-application", "test state directory")
 	genesisFile := flag.String("genesis", "./data/demo-genesis.json", "demo genesis without secret keys")
 	flag.Parse()
-	if *address != "tcp://127.0.0.1:26658" && *address != "tcp://localhost:26658" {
-		fmt.Fprintln(os.Stderr, "DEMO protocol is restricted to loopback:26658")
+	if !allowedLoopbackListen(*address) {
+		fmt.Fprintln(os.Stderr, "DEMO protocol is restricted to a valid loopback TCP port")
 		os.Exit(2)
 	}
 	backend, err := startWorker(*nodeBin, *worker, *stateDir, *genesisFile)
