@@ -42,7 +42,7 @@ async function handle(q) {
       if(q.path!=='/demo-state') return {code:1,log:'Unknown query path'};
       const snapshot=app.snapshot();
       const balances=Object.fromEntries(Object.entries(snapshot.accounts).map(([address,a])=>[address,a.balanceUnits]));
-      return {code:0,value:JSON.stringify({demo:true,height:snapshot.height,poolUnits:snapshot.poolUnits,balances,appHash:stateHash(snapshot)})};
+      return {code:0,value:JSON.stringify({demo:true,height:snapshot.height,poolUnits:snapshot.poolUnits,balances,appHash:stateHash(snapshot),receipts:snapshot.receipts.map(({id,height,from,to,grossUnits,receiverUnits,poolUnits})=>({id,height,from,to,grossUnits,receiverUnits,poolUnits}))})};
     }
     default: throw Error('Unknown method');
   }
