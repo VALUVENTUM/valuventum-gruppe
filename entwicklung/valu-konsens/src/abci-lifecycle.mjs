@@ -33,6 +33,12 @@ export class ValuLifecycle {
     this.pending = result;
     return {height:result.state.height, appHash:result.appHash, transactionIds:result.transactionIds};
   }
+  /** Stage a deterministic consensus candidate with individual tx results. */
+  setPendingConsensus(candidate) {
+    if (this.pending) throw Error('Pending block must be committed or discarded first');
+    if (candidate?.state?.height !== this.committed.height + 1) throw Error('Invalid pending height');
+    this.pending = candidate;
+  }
   async commit() {
     if (!this.pending) throw Error('No finalized block waiting for Commit');
     const candidate = this.pending;
