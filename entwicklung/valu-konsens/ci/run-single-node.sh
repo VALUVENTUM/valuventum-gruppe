@@ -25,6 +25,8 @@ trap cleanup EXIT
 node "$ROOT/tools/demo-genesis.mjs" "$DATA"
 (
   cd "$ROOT/abci-go"
+  # Resolve dependencies for both the adapter AND the full CometBFT CLI.
+  go get github.com/cometbft/cometbft/cmd/cometbft@v0.38.26
   go mod tidy
   go build -o "$DATA/valu-abci" ./cmd/valu-abci
   go build -o "$DATA/cometbft" github.com/cometbft/cometbft/cmd/cometbft
